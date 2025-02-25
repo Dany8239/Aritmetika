@@ -2,22 +2,36 @@ import time as t
 import random
 nums = []
 multnums = []
+mistakes = 0
 print("Vitej v aritmeticke hre!")
 while True:
     try:
         nums = []
         multnums = []
+        mistakes = 0
         n = int(input("Jaka je maximalni hodnota, se kterou chces pocitat?: "))
         limit = input("Chces omezit nasobeni na malou nasobilku?: [a]no/[n]e: ")
         rounds = int(input("Kolik chces hrat kol?: "))
+        if n <= 0 or rounds <= 0:
+            print("Zadej kladne cislo!")
+            continue
+        print("Zacinas za 3...")
+        t.sleep(1)
+        print("Zacinas za 2...")
+        t.sleep(1)
+        print("Zacinas za 1...")
+        t.sleep(1)
         if limit.lower() == "a":
-            for i in range(1, 11):
+            for i in range(11):
                 multnums.append(i)
             multn = 9
+        else:
+            for i in range(n+1):
+                multn = n
         print(multnums)
         totaltime = 0
-        for i in range(n):
-            nums.append(i+1)
+        for i in range(n+1):
+            nums.append(i)
         for i in range(rounds):
             op = random.randint(1, 4)
             idx1 = random.randint(0, n-1)
@@ -35,6 +49,7 @@ while True:
                         totaltime += end - start
                     else:
                         print("Spatne! Zkus to znovu.")
+                        mistakes += 1
             elif op == 2:
                 answered = False
                 answer = nums[idx1] - nums[idx2]
@@ -48,6 +63,7 @@ while True:
                         totaltime += end - start
                     else:
                         print("Spatne! Zkus to znovu.")
+                        mistakes += 1
             elif op == 3:
                 answered = False
                 idx1 = random.randint(0, multn-1)
@@ -63,6 +79,7 @@ while True:
                         totaltime += end - start
                     else:
                         print("Spatne! Zkus to znovu.")
+                        mistakes += 1
             elif op == 4:
                 answered = False
                 while nums[idx1] % nums[idx2] != 0:
@@ -79,7 +96,9 @@ while True:
                         totaltime += end - start
                     else:
                         print("Spatne! Zkus to znovu.")
+                        mistakes += 1
         print(f"Tvuj celkovy cas byl: {round(totaltime, 1)} sekund, prumerny cas na odpoved byl: {round(totaltime/rounds, 1)} sekund.")
+        print(f"Udelal jsi {mistakes} chyb. Tvoje presnost byla {round((rounds-mistakes)/rounds*100, 1)}%.")
         repeat = input("Chces hrat znovu? ([a]no/[n]e): ")
         if repeat.lower() == "a":
             continue
