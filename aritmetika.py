@@ -1,12 +1,81 @@
 import time as t
 import random
+import numpy as np
+import csv
+
+header = ["Name", "Accuracy", "AvgTime", "Difficulty"]
+leaderboard = "leaderboard.csv"
+
+def saveresults(name, accuracy, avgtime, difficulty, header, leaderboard):
+    try:
+        rows = []
+        user_exists = False
+        with open(leaderboard, mode='r', newline='') as file:
+            reader = csv.reader(file)
+            rows = list(reader)
+
+        if len(rows) > 1:
+            header = rows[0]
+            data = rows[1:]
+            
+            for i in range(len(data)):
+                if data[i][0] == name:
+                    data[i] = [name, accuracy, avgtime, difficulty]
+                    user_exists = True
+                    break
+            
+            if not user_exists:
+                data.append([name, accuracy, avgtime, difficulty])
+        else:
+            data = [[name, accuracy, avgtime, difficulty]]
+
+        with open(leaderboard, mode='w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(header)
+            writer.writerows(data)
+
+        print("Data ulozena uspesne.")
+    except FileNotFoundError:
+        print(f"Soubor '{leaderboard}' neexistuje")
+    except Exception as e:
+        print(f"Chyba: {e}")
+
+
+def sort_leaderboard(leaderboard):
+    try:
+        with open(leaderboard, mode='r') as file:
+            reader = csv.reader(file)
+            rows = list(reader)
+        
+        if len(rows) > 1:
+            header = rows[0]
+            data = rows[1:]
+            data.sort(key=lambda x: float(x[2]))
+
+            print("\nLeaderboard:")
+            print(f"{'Jmeno':<20} {'Presnost':<10} {'Prumerny cas':<15} {'Obtiznost':<12}")
+            for row in data:
+                name, accuracy, avgtime, difficulty = row
+                print(f"{name:<20} {accuracy:<10} {avgtime:<15} {difficulty:<12}")
+        else:
+            print("Leaderboard je prazdny")
+        print("\n")
+    except FileNotFoundError:
+        print(f"Soubor '{leaderboard}' neexistuje")
+    except Exception as e:
+        print(f"Chyba: {e}")
+
+
 print("Vitej v aritmeticke hre!")
+
 while True:
     try:
         nums = []
         multnums = []
         multn = 0
         n = 0
+        errors = 0
+        limit = ""
         diff = input("Vyber obtiznost: [b]aby, [e]asy, [m]edium, [h]ard, e[x]treme, [c]ustom: ")
         if diff.lower() == "c":
             n = int(input("Jaka je maximalni hodnota, se kterou chces pocitat?: "))
@@ -23,11 +92,13 @@ while True:
         if diff.lower() == "h":
             n = 100000
             multn = 100
-        if diff.lower == "e":
+        if diff.lower() == "x":
             n = 1000000
             multn = 200
 
         rounds = int(input("Kolik chces hrat kol?: "))
+        if rounds <= 0 or n <= 0:
+            raise ValueError
         if limit.lower() == "a":
             for i in range(1, 11):
                 multnums.append(i)
@@ -59,6 +130,7 @@ while True:
                         end = t.time()
                         totaltime += end - start
                     else:
+                        errors += 1
                         print("Spatne! Zkus to znovu.")
             elif op == 2:
                 answered = False
@@ -72,6 +144,7 @@ while True:
                         end = t.time()
                         totaltime += end - start
                     else:
+                        errors += 1
                         print("Spatne! Zkus to znovu.")
             elif op == 3:
                 answered = False
@@ -87,6 +160,7 @@ while True:
                         end = t.time()
                         totaltime += end - start
                     else:
+                        errors += 1
                         print("Spatne! Zkus to znovu.")
             elif op == 4:
                 answered = False
@@ -103,9 +177,22 @@ while True:
                         end = t.time()
                         totaltime += end - start
                     else:
+                        errors += 1
                         print("Spatne! Zkus to znovu.")
-        print(f"Tvuj celkovy cas byl: {round(totaltime, 1)} sekund, prumerny cas na odpoved byl: {round(totaltime/rounds, 1)} sekund.")
+        attempts = rounds + errors
+        avgtime = round(totaltime/rounds, 1)
+        if errors > 0:
+            accuracy = (rounds / (rounds + errors)) * 100
+            accuracy = round(accuracy, 1)
+        else:
+            accuracy = 100
+        print(f"Tvuj celkovy cas byl: {round(totaltime, 1)} sekund, prumerny cas na odpoved byl: {avgtime} sekund.")
+        print(f"Udelal jsi {errors} chyb, tvoje presnost byla {accuracy} %")
+        name = input("Zadej sve jmeno: ")
+        saveresults(name, accuracy, avgtime, diff, header, leaderboard)
+        sort_leaderboard(leaderboard)
         repeat = input("Chces hrat znovu? ([a]no/[n]e): ")
+
         if repeat.lower() == "a":
             continue
         else:
@@ -113,7 +200,7 @@ while True:
             t.sleep(1)
             break
     except ValueError:
-        print("Zadej platne cislo!")
+        print("Zadal jsi neplatnou hodnotu")
         continue
     except KeyboardInterrupt:
         print("Ukoncuji program")
