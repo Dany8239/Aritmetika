@@ -6,10 +6,9 @@ import csv
 header = ["Name", "Accuracy", "AvgTime", "Difficulty"]
 leaderboard = "leaderboard.csv"
 
-def saveresults(name, accuracy, avgtime, difficulty, header, leaderboard):
+def saveresults(accuracy, avgtime, difficulty, header, leaderboard):
     try:
         rows = []
-        user_exists = False
         with open(leaderboard, mode='r', newline='') as file:
             reader = csv.reader(file)
             rows = list(reader)
@@ -17,36 +16,34 @@ def saveresults(name, accuracy, avgtime, difficulty, header, leaderboard):
         if len(rows) > 1:
             header = rows[0]
             data = rows[1:]
-            
-            for i in range(len(data)):
-                if data[i][0] == name:
-                    data[i] = [name, accuracy, avgtime, difficulty]
-                    user_exists = True
-                    break
-            
-            if not user_exists:
-                data.append([name, accuracy, avgtime, difficulty])
-        else:
-            data = [[name, accuracy, avgtime, difficulty]]
+            best_time = min(float(row[2]) for row in data)
+
+            if avgtime >= best_time:
+                print("Your time was not faster. Leaderboard remains unchanged.")
+                sort_leaderboard(leaderboard)
+                return
+        
+        name = input("You set a new record! Enter your name: ")
+        data.append([name, accuracy, avgtime, difficulty])
+        data.sort(key=lambda x: float(x[2]))
 
         with open(leaderboard, mode='w', newline='') as file:
             writer = csv.writer(file)
             writer.writerow(header)
             writer.writerows(data)
-
+        
         print("Data ulozena uspesne.")
     except FileNotFoundError:
         print(f"Soubor '{leaderboard}' neexistuje")
     except Exception as e:
         print(f"Chyba: {e}")
 
-
 def sort_leaderboard(leaderboard):
     try:
         with open(leaderboard, mode='r') as file:
             reader = csv.reader(file)
             rows = list(reader)
-        
+
         if len(rows) > 1:
             header = rows[0]
             data = rows[1:]
@@ -64,7 +61,29 @@ def sort_leaderboard(leaderboard):
         print(f"Soubor '{leaderboard}' neexistuje")
     except Exception as e:
         print(f"Chyba: {e}")
+def sort_leaderboard(leaderboard):
+    try:
+        with open(leaderboard, mode='r') as file:
+            reader = csv.reader(file)
+            rows = list(reader)
 
+        if len(rows) > 1:
+            header = rows[0]
+            data = rows[1:]
+            data.sort(key=lambda x: float(x[2]))
+
+            print("\nLeaderboard:")
+            print(f"{'Jmeno':<20} {'Presnost':<10} {'Prumerny cas':<15} {'Obtiznost':<12}")
+            for row in data:
+                name, accuracy, avgtime, difficulty = row
+                print(f"{name:<20} {accuracy:<10} {avgtime:<15} {difficulty:<12}")
+        else:
+            print("Leaderboard je prazdny")
+        print("\n")
+    except FileNotFoundError:
+        print(f"Soubor '{leaderboard}' neexistuje")
+    except Exception as e:
+        print(f"Chyba: {e}")
 
 print("Vitej v aritmeticke hre!")
 
@@ -120,7 +139,7 @@ while True:
             idx2 = random.randint(0, n-1)
             if op == 1:
                 answered = False
-                answer = nums[idx1] + nums[idx2] 
+                answer = nums[idx1] + nums[idx2]
                 while not answered:
                     start = t.time()
                     usranswer = int(input(f"{nums[idx1]} + {nums[idx2]}: "))
@@ -153,7 +172,7 @@ while True:
                 answer = multnums[idx1] * multnums[idx2]
                 while not answered:
                     start = t.time()
-                    usranswer = int(input(f"{nums[idx1]}*{nums[idx2]}: "))
+                    usranswer = int(input(f"{nums[idx1]} * {nums[idx2]}: "))
                     if usranswer == answer:
                         print("Spravne!")
                         answered = True
@@ -170,7 +189,7 @@ while True:
                 answer = nums[idx1] // nums[idx2]
                 while not answered:
                     start = t.time()
-                    usranswer = float(input(f"{nums[idx1]}/{nums[idx2]}: "))
+                    usranswer = float(input(f"{nums[idx1]} / {nums[idx2]}: "))
                     if usranswer == answer:
                         print("Spravne!")
                         answered = True
@@ -180,7 +199,7 @@ while True:
                         errors += 1
                         print("Spatne! Zkus to znovu.")
         attempts = rounds + errors
-        avgtime = round(totaltime/rounds, 1)
+        avgtime = round(totaltime / rounds, 1)
         if errors > 0:
             accuracy = (rounds / (rounds + errors)) * 100
             accuracy = round(accuracy, 1)
@@ -196,7 +215,7 @@ while True:
         if repeat.lower() == "a":
             continue
         else:
-            print("Ukoncuji program")
+            print("\nUkoncuji program")
             t.sleep(1)
             break
     except ValueError:
