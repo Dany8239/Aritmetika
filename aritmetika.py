@@ -1,11 +1,15 @@
 import time as t
 import random
-import numpy as np
 import csv
 
 header = ["Name", "Accuracy", "AvgTime", "Difficulty"]
-leaderboard = "leaderboard.csv"
+import os
 
+leaderboard = os.path.join(os.path.dirname(__file__), "leaderboard.csv")
+if not os.path.exists(leaderboard):
+    with open(leaderboard, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(header)
 def saveresults(name, accuracy, avgtime, difficulty, header, leaderboard):
     try:
         rows = []
